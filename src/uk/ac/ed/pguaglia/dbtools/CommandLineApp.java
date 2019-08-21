@@ -8,8 +8,8 @@ import uk.ac.ed.pguaglia.dbtools.schema.RelationSchema;
 public class CommandLineApp {
 
 	public static void main(String[] args) {
-
 		Parser p = new Parser();
+		Formatter f = new Formatter();
 
 		if (args.length > 0) {
 			String task = args[0].toLowerCase();
@@ -20,7 +20,8 @@ public class CommandLineApp {
 				try {
 					Set<String> attributes = p.parseAttributeSet(args[1]);
 					Set<FunctionalDependency> fds = p.parseFDSet((args[2]));
-					System.out.println(Utils.closure(attributes, fds));
+					f.noDelimiters().separator(",");
+					System.out.println(f.toString(Utils.closure(attributes, fds)));
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -53,25 +54,26 @@ public class CommandLineApp {
 			} else if (task.equals(Task.MIN_COVER.getName())) {
 				try {
 					Set<FunctionalDependency> fds = p.parseFDSet((args[1]));
-					System.out.println(Utils.removeRedundantFDs(Utils.minimizeLHS(Utils.standardForm(fds))));
+					f.noDelimiters().separator("; ");
+					System.out.println(f.toString(Utils.removeRedundantFDs(Utils.minimizeLHS(Utils.standardForm(fds)))));
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}
-//		System.exit(0);
-//
-//		// create the command line parser
-//		CommandLineParser cliParser = new DefaultParser();
-//
-//		// create the Options
-//		Options options = new Options();
-//		options.addOption( Option.builder("i").build() );
-//
-//		System.out.println(args[0]);
-//		System.out.println(Arrays.asList(Arrays.copyOfRange(args, 1, args.length)));
-//		HelpFormatter formatter = new HelpFormatter();
-//		formatter.printHelp( "<TASK>", options );
+		//		System.exit(0);
+		//
+		//		// create the command line parser
+		//		CommandLineParser cliParser = new DefaultParser();
+		//
+		//		// create the Options
+		//		Options options = new Options();
+		//		options.addOption( Option.builder("i").build() );
+		//
+		//		System.out.println(args[0]);
+		//		System.out.println(Arrays.asList(Arrays.copyOfRange(args, 1, args.length)));
+		//		HelpFormatter formatter = new HelpFormatter();
+		//		formatter.printHelp( "<TASK>", options );
 	}
 }
