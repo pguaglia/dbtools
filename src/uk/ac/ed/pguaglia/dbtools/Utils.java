@@ -1,22 +1,13 @@
 package uk.ac.ed.pguaglia.dbtools;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import uk.ac.ed.pguaglia.dbtools.schema.FunctionalDependency;
 import uk.ac.ed.pguaglia.dbtools.schema.Parser;
 
 public class Utils {
-
-	private static final Logger logger = Logger.getLogger(Utils.class.getName());
-
-	public static Logger getLogger() {
-		return logger;
-	}
 
 	public static String attributesToString(Set<String> attr) {
 		Iterator<String> it = attr.iterator();
@@ -33,61 +24,50 @@ public class Utils {
 		return s;
 	}
 
-	public static int maxLengthIn(Collection<String> c) {
-		int max = -1;
-		for (String s : c) {
-			if (s.length() > max) {
-				max = s.length();
-			}
-		}
-		return max;
-	}
-
 	public static Set<String> closure(Set<String> attributes, Set<FunctionalDependency> fds) {
-		return closure(attributes, fds, false);
+		return closure(attributes, fds, false, null);
 	}
 
-	public static Set<String> closure(Set<String> attributes, Set<FunctionalDependency> fds, boolean verbose) {
-		if (verbose == false) {
-			logger.setLevel(Level.OFF);
+	public static Set<String> closure(Set<String> attributes, Set<FunctionalDependency> fds, boolean verbose, CommandLineIO io) {
+		if (verbose && io == null) {
+			return null;
 		}
-		logger.info("@|cyan <<< CLOSURE ALGORITHM (v1.0) >>>|@\n");
-		logger.info("Initializing");
+		io.printLineIf("@|cyan <<< CLOSURE ALGORITHM (v1.0) >>>|@\n", verbose);
+		io.printLineIf("Initializing", verbose);
+		
 		HashSet<String> closure = new HashSet<String>(attributes);
 		HashSet<FunctionalDependency> unused = new HashSet<FunctionalDependency>(fds);
 
 		Formatter f = new Formatter().delimiters("{ ", " }");
-		logger.info(String.format("\n\t@|blue CLOSURE|@ = %s", f.separator(", ").toString(closure)));
-		logger.info(String.format("\t@|blue UNUSED |@ = %s\n", f.separator("; ").toString(unused)));
+		io.printLineIf(String.format("\n\t@|blue CLOSURE|@ = %s", f.separator(", ").toString(closure)), verbose);
+		io.printLineIf(String.format("\t@|blue UNUSED |@ = %s\n", f.separator("; ").toString(unused)), verbose);
 
 		while (unused.isEmpty() == false) {
 			Iterator<FunctionalDependency> it = unused.iterator();
 			boolean triggered = false;
 			while (it.hasNext() && triggered == false) {
 				FunctionalDependency fd = it.next();
-				logger.info(String.format("Checking whether %s is applicable", fd));
+				io.printLineIf(String.format("Checking whether %s is applicable", fd), verbose);
 				if (closure.containsAll(fd.getLeftHandSide())) {
 					closure.addAll(fd.getRightHandSide());
-					logger.info(String.format("@|green YES|@ ==> Adding rhs to CLOSURE and removing %s from UNUSED", fd));
+					io.printLineIf(String.format("@|green YES|@ ==> Adding rhs to CLOSURE and removing %s from UNUSED", fd), verbose);
 					it.remove();
 					triggered = true;
 				} else {
-					logger.info("@|red NO|@");
+					io.printLineIf("@|red NO|@", verbose);
 				}
-				if (triggered) {
-					logger.info(String.format("\n\t@|blue CLOSURE|@ = %s", f.separator(", ").toString(closure)));
-					logger.info(String.format("\t@|blue UNUSED |@ = %s\n", f.separator("; ").toString(unused)));
-				}
+				io.printLineIf(String.format("\n\t@|blue CLOSURE|@ = %s", f.separator(", ").toString(closure)), verbose && triggered);
+				io.printLineIf(String.format("\t@|blue UNUSED |@ = %s\n", f.separator("; ").toString(unused)), verbose && triggered);
 			}
 			if (triggered == false) {
-				logger.info("\nNo FDs in UNUSED are applicable: DONE");
+				io.printLineIf("\nNo applicable functional dependencies in UNUSED: @|green done|@", verbose);
 				break;
 			}
 			if (unused.isEmpty()) {
-				logger.info("\nNo more FDs in UNUSED: DONE");
+				io.printLineIf("No more functional dependencies in UNUSED: @|green done|@", verbose);
 			}
 		}
-		logger.info(String.format("\n\t@|blue CLOSURE|@ = %s", f.separator(", ").toString(closure)));
+		io.printLineIf(String.format("\n\t@|blue CLOSURE|@ = %s", f.separator(", ").toString(closure)), verbose);
 		return closure;
 	}
 

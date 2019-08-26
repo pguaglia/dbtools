@@ -1,7 +1,5 @@
 package uk.ac.ed.pguaglia.dbtools;
 import java.util.Set;
-import java.util.logging.Logger;
-import java.util.logging.StreamHandler;
 
 import uk.ac.ed.pguaglia.dbtools.schema.FunctionalDependency;
 import uk.ac.ed.pguaglia.dbtools.schema.Parser;
@@ -12,10 +10,8 @@ public class CommandLineApp {
 	public static void main(String[] args) {
 		Parser p = new Parser();
 		Formatter f = new Formatter();
-		
-		Logger utilsLogger = Utils.getLogger();
-		utilsLogger.setUseParentHandlers(false);
-		utilsLogger.addHandler(new StreamHandler(System.out, new LogFormatter()));
+				
+		CommandLineIO io = new CommandLineIO();
 
 		if (args.length > 0) {
 			String task = args[0].toLowerCase();
@@ -24,7 +20,7 @@ public class CommandLineApp {
 					Set<String> attributes = p.parseAttributeSet(args[1]);
 					Set<FunctionalDependency> fds = p.parseFDSet((args[2]));
 					f.noDelimiters().separator(",");
-					f.toString(Utils.closure(attributes, fds, true));
+					f.toString(Utils.closure(attributes, fds, true, io));
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
