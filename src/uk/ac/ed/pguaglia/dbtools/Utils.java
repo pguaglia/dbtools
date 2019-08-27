@@ -30,7 +30,7 @@ public class Utils {
 
 	public static Set<String> closure(Set<String> attributes, Set<FunctionalDependency> fds, boolean verbose, boolean interactive) {
 		CommandLineIO.printLineIf(verbose, "@|cyan <<< CLOSURE ALGORITHM >>>|@\n\nInitializing");
-		
+
 		HashSet<String> closure = new HashSet<String>(attributes);
 		HashSet<FunctionalDependency> unused = new HashSet<FunctionalDependency>(fds);
 
