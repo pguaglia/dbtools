@@ -10,8 +10,6 @@ public class CommandLineApp {
 	public static void main(String[] args) {
 		Parser p = new Parser();
 		Formatter f = new Formatter();
-				
-		CommandLineIO io = new CommandLineIO();
 
 		if (args.length > 0) {
 			String task = args[0].toLowerCase();
@@ -20,7 +18,7 @@ public class CommandLineApp {
 					Set<String> attributes = p.parseAttributeSet(args[1]);
 					Set<FunctionalDependency> fds = p.parseFDSet((args[2]));
 					f.noDelimiters().separator(",");
-					f.toString(Utils.closure(attributes, fds, true, io));
+					Utils.closure(attributes, fds, true, true);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

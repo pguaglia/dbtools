@@ -25,49 +25,44 @@ public class Utils {
 	}
 
 	public static Set<String> closure(Set<String> attributes, Set<FunctionalDependency> fds) {
-		return closure(attributes, fds, false, null);
+		return closure(attributes, fds, false, false);
 	}
 
-	public static Set<String> closure(Set<String> attributes, Set<FunctionalDependency> fds, boolean verbose, CommandLineIO io) {
-		if (verbose && io == null) {
-			return null;
-		}
-		io.printLineIf("@|cyan <<< CLOSURE ALGORITHM (v1.0) >>>|@\n", verbose);
-		io.printLineIf("Initializing", verbose);
+	public static Set<String> closure(Set<String> attributes, Set<FunctionalDependency> fds, boolean verbose, boolean interactive) {
+		CommandLineIO.printLineIf(verbose, "@|cyan <<< CLOSURE ALGORITHM >>>|@\n\nInitializing");
 		
 		HashSet<String> closure = new HashSet<String>(attributes);
 		HashSet<FunctionalDependency> unused = new HashSet<FunctionalDependency>(fds);
 
 		Formatter f = new Formatter().delimiters("{ ", " }");
-		io.printLineIf(String.format("\n\t@|blue CLOSURE|@ = %s", f.separator(", ").toString(closure)), verbose);
-		io.printLineIf(String.format("\t@|blue UNUSED |@ = %s\n", f.separator("; ").toString(unused)), verbose);
+		CommandLineIO.printLineIf(verbose, "\n\t@|blue CLOSURE|@ = %s", f.separator(", ").toString(closure));
+		CommandLineIO.printLineIf(verbose, "\t@|blue UNUSED |@ = %s\n", f.separator("; ").toString(unused));
 
 		while (unused.isEmpty() == false) {
 			Iterator<FunctionalDependency> it = unused.iterator();
 			boolean triggered = false;
 			while (it.hasNext() && triggered == false) {
+				CommandLineIO.readLineIf(interactive, "@|cyan Press <RETURN> to continue... |@");
 				FunctionalDependency fd = it.next();
-				io.printLineIf(String.format("Checking whether %s is applicable", fd), verbose);
+				CommandLineIO.printLineIf(verbose, "Checking whether %s is applicable", fd);
 				if (closure.containsAll(fd.getLeftHandSide())) {
 					closure.addAll(fd.getRightHandSide());
-					io.printLineIf(String.format("@|green YES|@ ==> Adding rhs to CLOSURE and removing %s from UNUSED", fd), verbose);
+					CommandLineIO.printLineIf(verbose, "@|green YES|@ ==> Adding rhs to CLOSURE and removing %s from UNUSED", fd);
 					it.remove();
 					triggered = true;
 				} else {
-					io.printLineIf("@|red NO|@", verbose);
+					CommandLineIO.printLineIf(verbose, "@|red NO|@");
 				}
-				io.printLineIf(String.format("\n\t@|blue CLOSURE|@ = %s", f.separator(", ").toString(closure)), verbose && triggered);
-				io.printLineIf(String.format("\t@|blue UNUSED |@ = %s\n", f.separator("; ").toString(unused)), verbose && triggered);
+				CommandLineIO.printLineIf(verbose && triggered, "\n\t@|blue CLOSURE|@ = %s", f.separator(", ").toString(closure));
+				CommandLineIO.printLineIf(verbose && triggered, "\t@|blue UNUSED |@ = %s\n", f.separator("; ").toString(unused));
 			}
 			if (triggered == false) {
-				io.printLineIf("\nNo applicable functional dependencies in UNUSED: @|green done|@", verbose);
+				CommandLineIO.printLineIf(verbose, "\nNo applicable functional dependencies in UNUSED: @|green done|@");
 				break;
 			}
-			if (unused.isEmpty()) {
-				io.printLineIf("No more functional dependencies in UNUSED: @|green done|@", verbose);
-			}
+			CommandLineIO.printLineIf(verbose && unused.isEmpty(), "No more functional dependencies in UNUSED: @|green done|@");
 		}
-		io.printLineIf(String.format("\n\t@|blue CLOSURE|@ = %s", f.separator(", ").toString(closure)), verbose);
+		CommandLineIO.printLineIf(verbose, "\n\t@|blue CLOSURE|@ = %s", f.separator(", ").toString(closure));
 		return closure;
 	}
 
